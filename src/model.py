@@ -10,7 +10,18 @@ import torch
 from torch import nn
 from torch.autograd import Variable
 from torch.nn import functional as F
+import torch._utils
 
+## use older version of pytorch : https://discuss.pytorch.org/t/question-about-rebuild-tensor-v2/1456
+try:
+    torch._utils._rebuild_tensor_v2
+except AttributeError:
+    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
+        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor.requires_grad = requires_grad
+        tensor._backward_hooks = backward_hooks
+        return tensor
+    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 
 def build_layers(img_sz, img_fm, init_fm, max_fm, n_layers, n_attr, n_skip,
                  deconv_method, instance_norm, enc_dropout, dec_dropout):

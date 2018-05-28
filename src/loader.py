@@ -8,6 +8,16 @@
 import os
 import numpy as np
 import torch
+import torch._utils
+try:
+    torch._utils._rebuild_tensor_v2
+except AttributeError:
+    def _rebuild_tensor_v2(storage, storage_offset, size, stride, requires_grad, backward_hooks):
+        tensor = torch._utils._rebuild_tensor(storage, storage_offset, size, stride)
+        tensor.requires_grad = requires_grad
+        tensor._backward_hooks = backward_hooks
+        return tensor
+    torch._utils._rebuild_tensor_v2 = _rebuild_tensor_v2
 from torch.autograd import Variable
 from logging import getLogger
 
@@ -117,7 +127,7 @@ class DataSampler(object):
         """
         # image IDs
         idx = torch.LongTensor(bs).random_(len(self.images))
-
+        
         # select images / attributes
         batch_x = normalize_images(self.images.index_select(0, idx).cuda())
         batch_y = self.attributes.index_select(0, idx).cuda()
@@ -129,12 +139,14 @@ class DataSampler(object):
             batch_x = batch_x.index_select(3, torch.arange(batch_x.size(3) - 1, -1, -1).long().cuda())
 
         return Variable(batch_x, volatile=False), Variable(batch_y, volatile=False)
-
+    
     def eval_batch(self, i, j):
         """
         Get a batch of images in a range with their attributes.
         """
         assert i < j
+        
         batch_x = normalize_images(self.images[i:j].cuda())
         batch_y = self.attributes[i:j].cuda()
+        
         return Variable(batch_x, volatile=True), Variable(batch_y, volatile=True)

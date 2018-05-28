@@ -60,6 +60,7 @@ def bool_flag(s):
 def attr_flag(s):
     """
     Parse attributes parameters.
+    params.attr are assumed to be binary unless explicity stated as "NON_BINARY_ATTR.NUM_OF_CATEGORIES"
     """
     if s == "*":
         return s
@@ -71,15 +72,15 @@ def attr_flag(s):
             attributes.append((x, 2))
         else:
             split = x.split('.')
-            assert len(split) == 2 and len(split[0]) > 0
-            assert split[1].isdigit() and int(split[1]) >= 2
-            attributes.append((split[0], int(split[1])))
+            assert len(split) == 2 and len(split[0]) > 0 #check if category is legal
+            assert split[1].isdigit() and int(split[1]) >= 2 # check if category is >= 2
+            attributes.append((split[0], int(split[1]))) 
     return sorted(attributes, key=lambda x: (x[1], x[0]))
 
 
 def check_attr(params):
     """
-    Check attributes validy.
+    Check attributes validity. 
     """
     if params.attr == '*':
         params.attr = attr_flag(','.join(AVAILABLE_ATTR))

@@ -86,12 +86,15 @@ parser.add_argument("--ptc_dis_reload", type=str, default="",
                     help="Reload a pretrained patch discriminator")
 parser.add_argument("--clf_dis_reload", type=str, default="",
                     help="Reload a pretrained classifier discriminator")
-parser.add_argument("--eval_clf", type=str, default="",
+parser.add_argument("--eval_clf", type=str, default="models/classifier256.pth",
                     help="Load an external classifier for evaluation")
 parser.add_argument("--debug", type=bool_flag, default=False,
                     help="Debug mode (only load a subset of the whole dataset)")
 params = parser.parse_args()
 
+params_dict = vars(params)
+for k,v in params_dict.items():
+    print(k, v)
 # check parameters
 check_attr(params)
 assert len(params.name.strip()) > 0
@@ -109,9 +112,9 @@ assert params.lambda_clf_dis == 0 or params.n_clf_dis > 0
 
 # initialize experiment / load dataset
 logger = initialize_exp(params)
-data, attributes = load_images(params)
-train_data = DataSampler(data[0], attributes[0], params)
-valid_data = DataSampler(data[1], attributes[1], params)
+train_val_test_images, train_val_test_attrs = load_images(params)
+train_data = DataSampler(train_val_test_images[0], train_val_test_attrs[0], params)
+valid_data = DataSampler(train_val_test_images[1], train_val_test_attrs[1], params)
 
 # build the model
 ae = AutoEncoder(params).cuda()
