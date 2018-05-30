@@ -60,6 +60,8 @@ def load_images(params):
     Load celebA dataset.
     """
     # load data
+    
+    print(f'printing DATA PATH .... {DATA_PATH}')
     images_filename = 'images_%i_%i_20000.pth' if params.debug else 'images_%i_%i.pth'
     images_filename = images_filename % (params.img_sz, params.img_sz)
     images = torch.load(os.path.join(DATA_PATH, images_filename))
